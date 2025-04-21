@@ -1,0 +1,139 @@
+
+
+package com.example.calculator;
+
+import androidx.appcompat.app.AppCompatActivity;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
+
+public class MainActivity extends AppCompatActivity {
+
+    private TextView tvDisplay;
+    private String currentNumber = "";
+    private String operation = "";
+    private double firstNumber = 0;
+    private boolean isNewInput = true;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        tvDisplay = findViewById(R.id.tv_display);
+
+        // Number buttons
+        setNumberButton(R.id.btn_0, "0");
+        setNumberButton(R.id.btn_1, "1");
+        setNumberButton(R.id.btn_2, "2");
+        setNumberButton(R.id.btn_3, "3");
+        setNumberButton(R.id.btn_4, "4");
+        setNumberButton(R.id.btn_5, "5");
+        setNumberButton(R.id.btn_6, "6");
+        setNumberButton(R.id.btn_7, "7");
+        setNumberButton(R.id.btn_8, "8");
+        setNumberButton(R.id.btn_9, "9");
+        setNumberButton(R.id.btn_decimal, ".");
+
+        // Operation buttons
+        setOperationButton(R.id.btn_add, "+");
+        setOperationButton(R.id.btn_subtract, "-");
+        setOperationButton(R.id.btn_multiply, "×");
+        setOperationButton(R.id.btn_divide, "÷");
+
+        // Clear button
+        Button btnClear = findViewById(R.id.btn_clear);
+        btnClear.setOnClickListener(v -> {
+            currentNumber = "";
+            operation = "";
+            firstNumber = 0;
+            tvDisplay.setText("0");
+            isNewInput = true;
+        });
+
+        // Delete button
+        Button btnDelete = findViewById(R.id.btn_delete);
+        btnDelete.setOnClickListener(v -> {
+            if (currentNumber.length() > 0) {
+                currentNumber = currentNumber.substring(0, currentNumber.length() - 1);
+                tvDisplay.setText(currentNumber.isEmpty() ? "0" : currentNumber);
+            }
+        });
+
+        // Equals button
+        Button btnEquals = findViewById(R.id.btn_equals);
+        btnEquals.setOnClickListener(v -> calculateResult());
+    }
+
+    private void setNumberButton(int buttonId, final String number) {
+        Button button = findViewById(buttonId);
+        button.setOnClickListener(v -> {
+            if (isNewInput) {
+                currentNumber = "";
+                isNewInput = false;
+            }
+
+            // Prevent multiple decimal points
+            if (number.equals(".")) {
+                if (!currentNumber.contains(".")) {
+                    currentNumber += number;
+                }
+            } else {
+                currentNumber += number;
+            }
+
+            tvDisplay.setText(currentNumber);
+        });
+    }
+
+    private void setOperationButton(int buttonId, final String op) {
+        Button button = findViewById(buttonId);
+        button.setOnClickListener(v -> {
+            if (!currentNumber.isEmpty()) {
+                firstNumber = Double.parseDouble(currentNumber);
+                operation = op;
+                isNewInput = true;
+                tvDisplay.setText(op);
+            }
+        });
+    }
+
+    private void calculateResult() {
+        if (!currentNumber.isEmpty() && !operation.isEmpty()) {
+            double secondNumber = Double.parseDouble(currentNumber);
+            double result = 0;
+
+            switch (operation) {
+                case "+":
+                    result = firstNumber + secondNumber;
+                    break;
+                case "-":
+                    result = firstNumber - secondNumber;
+                    break;
+                case "×":
+                    result = firstNumber * secondNumber;
+                    break;
+                case "÷":
+                    if (secondNumber != 0) {
+                        result = firstNumber / secondNumber;
+                    } else {
+                        tvDisplay.setText("Error");
+                        return;
+                    }
+                    break;
+            }
+
+            // Format the result to remove .0 if it's an integer
+            if (result == (int) result) {
+                currentNumber = String.valueOf((int) result);
+            } else {
+                currentNumber = String.valueOf(result);
+            }
+
+            tvDisplay.setText(currentNumber);
+            isNewInput = true;
+            operation = "";
+        }
+    }
+}
